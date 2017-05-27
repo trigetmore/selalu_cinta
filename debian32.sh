@@ -31,6 +31,7 @@ done
 if [ $flag -eq 0 ]
 then
    echo  "Your Server IP is not registered. Please contact admin"
+   rm /root/debian32.sh
    exit 1
 fi
 # go to root
@@ -299,3 +300,4 @@ echo "16. Restart openssh service"
 echo "(refresh port openssh agar tetap stabil)"
 echo "17. Keluar VPS"
 echo "(logout VPS server)"
+rm ./debian32.sh
