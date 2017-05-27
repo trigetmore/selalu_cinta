@@ -1,0 +1,184 @@
+#!/bin/bash
+myip=`ifconfig | grep         -Eo 'inet (addr:)?([0-9]*\.){3}[0-9]*' | grep -Eo '([0-9]*\.){3}[0-9]*' | grep -v '127.0.0' | head -n1`;
+
+flag=0
+
+echo
+
+function create_user() {
+	useradd -M $uname
+	echo "$uname:$pass" | chpasswd
+	usermod -e $expdate $uname
+
+	myip=`ifconfig | grep -Eo 'inet (addr:)?([0-9]*\.){3}[0-9]*' | grep -Eo '([0-9]*\.){3}[0-9]*' | grep -v '127.0.0' | head -n1`;
+	myip2="s/xxxxxxxxx/$myip/g";	
+source="https://raw.githubusercontent.com/"
+	wget -qO /tmp/client.ovpn $source/debian7/1194-client.conf
+	sed -i 's/remote xxxxxxxxx 1194/remote xxxxxxxxx 443/g' /tmp/client.ovpn
+	sed -i $myip2 /tmp/client.ovpn
+	echo ""
+	echo "OpenVPN  : TCP 443 (client config : http://$myip:81/client.tar)"
+}
+
+function renew_user() {
+	echo "New expiration date for $uname: $expdate...";
+	usermod -e $expdate $uname
+}
+
+function delete_user(){
+	userdel $uname
+}
+
+function expired_users(){
+	cat /etc/shadow | cut -d: -f1,8 | sed /:$/d > /tmp/expirelist.txt
+	totalaccounts=`cat /tmp/expirelist.txt | wc -l`
+	for((i=1; i<=$totalaccounts; i++ )); do
+		tuserval=`head -n $i /tmp/expirelist.txt | tail -n 1`
+		username=`echo $tuserval | cut -f1 -d:`
+		userexp=`echo $tuserval | cut -f2 -d:`
+		userexpireinseconds=$(( $userexp * 86400 ))
+		todaystime=`date +%s`
+		if [ $userexpireinseconds -lt $todaystime ] ; then
+			echo $username
+		fi
+	done
+	rm /tmp/expirelist.txt
+}
+
+function not_expired_users(){
+    cat /etc/shadow | cut -d: -f1,8 | sed /:$/d > /tmp/expirelist.txt
+    totalaccounts=`cat /tmp/expirelist.txt | wc -l`
+    for((i=1; i<=$totalaccounts; i++ )); do
+        tuserval=`head -n $i /tmp/expirelist.txt | tail -n 1`
+        username=`echo $tuserval | cut -f1 -d:`
+        userexp=`echo $tuserval | cut -f2 -d:`
+        userexpireinseconds=$(( $userexp * 86400 ))
+        todaystime=`date +%s`
+        if [ $userexpireinseconds -gt $todaystime ] ; then
+            echo $username
+        fi
+    done
+	rm /tmp/expirelist.txt
+}
+
+function used_data(){
+	myip=`ifconfig | grep -Eo 'inet (addr:)?([0-9]*\.){3}[0-9]*' | grep -Eo '([0-9]*\.){3}[0-9]*' | grep -v '127.0.0' | head -n1`
+	myint=`ifconfig | grep -B1 "inet addr:$myip" | head -n1 | awk '{print $1}'`
+	ifconfig $myint | grep "RX bytes" | sed -e 's/ *RX [a-z:0-9]*/Received: /g' | sed -e 's/TX [a-z:0-9]*/\nTransfered: /g'
+}
+
+clear
+echo "System Anonymous
+(copyright 2017-2018)
+
+=====================================================
+#     DEBIAN ============6-4============ DEBIAN     #
+#           [SETUP BY ANONYMOUS]           #
+#              SECURITY PROTECT SERVER              #
+=====================================================
+INFORMASI KONTAK HUBUNGI DI BAWAH  
+=====================================================
+# Email      : -                                   #
+# My facebook: -                                   #
+# Whatsapp   : -                                   #
+# Bbm pin    : -                                   #
+# Open order :VPS LINODE,VULTR & LAYERMEDIA         #
+# Open order :JASA INSTAL SCRIPT VPS UTK jualan ssh #
+# Open order :SSH (secure shell)                    #
+=====================================================
+
+";
+PS3='Please enter your choice: '
+options=("Buat user" "Perpanjang user" "Hapus user" "Daftar user" "User belum expired" "User expired" "Restart VPS" "Ganti pass VPS" "Pengunaan data user" "Status spek VPS" "Monitor login & multi" "Restart port openvpn" "Restart port dropbear" "Restart port squid" "Restart openssh service" "Keluar VPS")
+select opt in "${options[@]}"
+do
+    case $opt in
+        "Buat user")
+            read -p "Enter username: " uname
+            read -p "Enter password: " pass
+            read -p "Enter expiry date (YYYY-MM-DD): " expdate
+	    create_user
+		echo -e ""
+		echo -e "========Info SSH akun========"
+		echo -e "Host/Ip Ssh  : $myip"
+		echo -e "Username     : $uname"
+		echo -e "Password     : $pass" 
+		echo -e "Port Openssh : 22 , 143,"
+		echo -e "Port Dropbear: 443 ,80, 109, 110"
+		echo -e "Port Squid   : 8080, 3128, 80"
+		echo -e "-----------------------------"
+		echo -e "Aktif Sampai: $expdate"
+		echo -e "============================="
+		echo -e "info kontak penjual hubungi dibawah
+		echo -e "============================="
+		echo -e "My facebook  : -        "
+		echo -e "Whatsapp     : -        "    
+		echo -e "Bbm pin      : -        "         
+		echo -e "============================="
+	    break
+            ;;
+        "Perpanjang user")
+            read -p "Enter username to renew: " uname
+            read -p "Enter expiry date (YYYY-MM-DD): " expdate
+            renew_user
+            break
+            ;;
+        "Hapus user")
+            read -p "Enter username to be removed: " uname
+            delete_user
+            break
+            ;;		
+		"Daftar user")
+            user-list
+            break
+            ;;
+		"User belum expired")
+			not_expired_users
+			break
+			;;
+		"User expired")
+			expired_users
+			break
+			;;		
+		"Restart VPS")
+			reboot
+			break
+			;;	
+		"Ganti pass VPS")
+			passwd
+			break
+			;;
+		"Pengunaan data user")
+			used_data
+			break
+			;;
+		"Status spek VPS")
+		    free -h | grep -v + > /tmp/ramcache
+            cat /tmp/ramcache | grep -v "Swap"
+            break
+              ;;
+       "Monitor login & multi")
+               monssh
+                break
+	          ;;
+		"Restart port openvpn")	
+            service openvpn restart
+		    break
+			;;
+		"Restart port dropbear")	
+            service dropbear restart
+			break
+			;;
+        "Restart port squid")	
+            service squid3 restart
+			break
+			;;			
+        "Restart openssh service")
+            service ssh restart
+            ;;
+        "Keluar VPS")
+            exit
+            ;;    
+        *) echo invalid option;;
+    esac
+done
