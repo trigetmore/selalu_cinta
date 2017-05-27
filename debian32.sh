@@ -8,20 +8,30 @@ source="https://raw.githubusercontent.com/selalu_cinta"
 
 #iplist="ip.txt"
 
-cd
+wget --quiet -O iplist.txt $source/debian7/ip.txt
 
-# check registered ip
-wget -q -O IP $source/debian7/IP.txt
-if ! grep -w -q $MYIP IP; then
-	echo "Maaf, hanya IP yang terdaftar yang bisa menggunakan script ini!"
-	if [[ $vps = "zvur" ]]; then
-		echo "Hubungi: editor YUSUF-ARDIANSYAH atau (082139743432)"
-	else
-		echo "Hubungi: editor YUSUF-ARDIANSYAH atau (082139743432)"
-	fi
-	rm /root/IP
-	rm -f /root/IP
-	exit
+#if [ -f iplist ]
+#then
+
+iplist="iplist.txt"
+
+lines=`cat $iplist`
+#echo $lines
+
+for line in $lines; do
+#        echo "$line"
+        if [ "$line" = "$myip" ]
+        then
+                flag=1
+        fi
+
+done
+
+
+if [ $flag -eq 0 ]
+then
+   echo  "Your Server IP is not registered. Please contact admin"
+   exit 1
 fi
 # go to root
 cd
