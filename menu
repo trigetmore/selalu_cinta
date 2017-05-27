@@ -12,7 +12,7 @@ function create_user() {
 
 	myip=`ifconfig | grep -Eo 'inet (addr:)?([0-9]*\.){3}[0-9]*' | grep -Eo '([0-9]*\.){3}[0-9]*' | grep -v '127.0.0' | head -n1`;
 	myip2="s/xxxxxxxxx/$myip/g";	
-source="https://raw.githubusercontent.com/selalu_cinta"
+source="https://raw.githubusercontent.com/trigetmore/selalu_cinta"
 	wget -qO /tmp/client.ovpn $source/debian7/1194-client.conf
 	sed -i 's/remote xxxxxxxxx 1194/remote xxxxxxxxx 443/g' /tmp/client.ovpn
 	sed -i $myip2 /tmp/client.ovpn
