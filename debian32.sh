@@ -4,7 +4,7 @@ myint=`ifconfig | grep -B1 "inet addr:$myip" | head -n1 | awk '{print $1}'`;
 
 flag=0
 
-source="https://raw.githubusercontent.com/"
+source="https://raw.githubusercontent.com/selalu_cinta"
 
 #iplist="ip.txt"
 
